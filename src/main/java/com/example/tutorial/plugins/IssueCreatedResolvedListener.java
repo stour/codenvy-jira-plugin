@@ -171,8 +171,8 @@ public class IssueCreatedResolvedListener implements InitializingBean, Disposabl
                         LOG.info("Id of field Develop (" + developFieldId + ") and/or Review (" + reviewFieldId + ") is null.");
                         return;
                     }
-                    String developFactoryUrl = getFactoryUrl(generatedDevelopFactory);
-                    String reviewFactoryUrl = getFactoryUrl(generatedReviewFactory);
+                    String developFactoryUrl = getNamedFactoryUrl(generatedDevelopFactory);
+                    String reviewFactoryUrl = getNamedFactoryUrl(generatedReviewFactory);
 
                     if (developFactoryUrl == null || reviewFactoryUrl == null) {
                         LOG.info("URL of factory Develop (" + developFactoryUrl + ") and/or Review (" + reviewFactoryUrl +
@@ -212,13 +212,13 @@ public class IssueCreatedResolvedListener implements InitializingBean, Disposabl
         return newFactory;
     }
 
-    private String getFactoryUrl(JSONObject factory) throws JSONException {
+    private String getNamedFactoryUrl(JSONObject factory) throws JSONException {
         String factoryUrl = null;
         JSONArray links = factory.getJSONArray("links");
         for (int i = 0; i < links.length(); i++) {
             JSONObject link = links.getJSONObject(i);
             String rel = link.getString("rel");
-            if ("accept".equals(rel)) {
+            if ("accept-named".equals(rel)) {
                 factoryUrl = link.getString("href");
                 break;
             }
