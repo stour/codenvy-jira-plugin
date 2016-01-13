@@ -6,8 +6,9 @@ AJS.toInit(function() {
             url: baseUrl + "/rest/codenvy-admin/1.0/",
             dataType: "json",
             success: function(config) {
-                AJS.$("#name").attr("value", config.name);
-                AJS.$("#time").attr("value", config.time);
+                AJS.$("#instanceUrl").attr("value", config.instanceUrl);
+                AJS.$("#username").attr("value", config.username);
+                AJS.$("#password").attr("value", config.password);
             }
         });
     }
@@ -16,7 +17,7 @@ AJS.toInit(function() {
             url: baseUrl + "/rest/codenvy-admin/1.0/",
             type: "PUT",
             contentType: "application/json",
-            data: '{ "name": "' + AJS.$("#name").attr("value") + '", "time": ' +  AJS.$("#time").attr("value") + ' }',
+            data: '{ "instanceUrl": "' + AJS.$("#instanceUrl").attr("value") + '", "username": "' + AJS.$("#username").attr("value") + '", "password": "' + AJS.$("#password").attr("value") + '" }',
             processData: false
         });
     }

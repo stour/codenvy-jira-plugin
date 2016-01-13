@@ -7,12 +7,16 @@
 <body>
 <form id="admin" class="aui">
     <div class="field-group">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" class="text">
+        <label for="instanceUrl">Instance URL:</label>
+        <input type="text" id="instanceUrl" name="instanceUrl" class="text">
     </div>
     <div class="field-group">
-        <label for="time">Time:</label>
-        <input type="text" id="time" name="time" class="text">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" class="text">
+    </div>
+    <div class="field-group">
+        <label for="password">Password:</label>
+        <input type="text" id="password" name="password" class="text">
     </div>
     <div class="field-group">
         <input type="submit" value="Save" class="button">

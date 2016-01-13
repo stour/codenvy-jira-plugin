@@ -46,12 +46,9 @@ public class ConfigResource {
             public Object doInTransaction() {
                 PluginSettings settings = pluginSettingsFactory.createGlobalSettings();
                 Config config = new Config();
-                config.setName((String)settings.get("codenvy.admin.name"));
-
-                String time = (String)settings.get("codenvy.admin.time");
-                if (time != null) {
-                    config.setTime(Integer.parseInt(time));
-                }
+                config.setInstanceUrl((String)settings.get("codenvy.admin.instanceurl"));
+                config.setUsername((String)settings.get("codenvy.admin.username"));
+                config.setPassword((String)settings.get("codenvy.admin.password"));
                 return config;
             }
         })).build();
@@ -68,8 +65,9 @@ public class ConfigResource {
         transactionTemplate.execute(new TransactionCallback() {
             public Object doInTransaction() {
                 PluginSettings pluginSettings = pluginSettingsFactory.createGlobalSettings();
-                pluginSettings.put("codenvy.admin.name", config.getName());
-                pluginSettings.put("codenvy.admin.time", Integer.toString(config.getTime()));
+                pluginSettings.put("codenvy.admin.instanceurl", config.getInstanceUrl());
+                pluginSettings.put("codenvy.admin.username", config.getUsername());
+                pluginSettings.put("codenvy.admin.password", config.getPassword());
                 return null;
             }
         });
@@ -79,25 +77,36 @@ public class ConfigResource {
     @XmlRootElement
     @XmlAccessorType(XmlAccessType.FIELD)
     public static final class Config {
+
         @XmlElement
-        private String name;
+        private String instanceUrl;
         @XmlElement
-        private int    time;
+        private String username;
+        @XmlElement
+        private String password;
 
-        public String getName() {
-            return name;
+        public String getInstanceUrl() {
+            return instanceUrl;
         }
 
-        public void setName(String name) {
-            this.name = name;
+        public void setInstanceUrl(String instanceUrl) {
+            this.instanceUrl = instanceUrl;
         }
 
-        public int getTime() {
-            return time;
+        public String getUsername() {
+            return username;
         }
 
-        public void setTime(int time) {
-            this.time = time;
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
         }
     }
 }
