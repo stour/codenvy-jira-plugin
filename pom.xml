@@ -13,34 +13,34 @@
     <description>This plugin implements a simple issue event listener for JIRA using atlassian-event.</description>
     <packaging>atlassian-plugin</packaging>
     <dependencies>
-        <!-- <dependency>
-            <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-api-auth</artifactId>
-            <version>4.0.0-beta-6</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-api-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-api-dto</artifactId>
-            <version>4.0.0-beta-6</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.che.core</groupId>
-            <artifactId>che-core-api-factory</artifactId>
-            <version>4.0.0-beta-6</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-client</artifactId>
-            <version>2.6</version>
-        </dependency> -->
         <dependency>
             <groupId>us.monoid.web</groupId>
             <artifactId>resty</artifactId>
             <version>0.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>jsr311-api</artifactId>
+            <version>1.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.sal</groupId>
+            <artifactId>sal-api</artifactId>
+            <version>2.6.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.templaterenderer</groupId>
+            <artifactId>atlassian-template-renderer-api</artifactId>
+            <version>2.0.0</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.atlassian.jira</groupId>
@@ -114,6 +114,7 @@
     <properties>
         <jira.version>6.4.6</jira.version>
         <amps.version>6.2.1</amps.version>
+        <refapp.version>2.12.0</refapp.version>
         <plugin.testrunner.version>1.1.1</plugin.testrunner.version>
         <!-- TestKit version 5.x for JIRA 5.x, 6.x for JIRA 6.x -->
         <testkit.version>6.4.6</testkit.version>
