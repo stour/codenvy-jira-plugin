@@ -46,9 +46,9 @@ public class ConfigResource {
             public Object doInTransaction() {
                 PluginSettings settings = pluginSettingsFactory.createGlobalSettings();
                 Config config = new Config();
-                config.setName((String)settings.get(Config.class.getName() + ".name"));
+                config.setName((String)settings.get("codenvy.admin.name"));
 
-                String time = (String)settings.get(Config.class.getName() + ".time");
+                String time = (String)settings.get("codenvy.admin.time");
                 if (time != null) {
                     config.setTime(Integer.parseInt(time));
                 }
@@ -68,8 +68,8 @@ public class ConfigResource {
         transactionTemplate.execute(new TransactionCallback() {
             public Object doInTransaction() {
                 PluginSettings pluginSettings = pluginSettingsFactory.createGlobalSettings();
-                pluginSettings.put(Config.class.getName() + ".name", config.getName());
-                pluginSettings.put(Config.class.getName() + ".time", Integer.toString(config.getTime()));
+                pluginSettings.put("codenvy.admin.name", config.getName());
+                pluginSettings.put("codenvy.admin.time", Integer.toString(config.getTime()));
                 return null;
             }
         });
