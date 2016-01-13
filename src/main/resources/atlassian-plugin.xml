@@ -50,7 +50,7 @@
     </rest>
     <web-resource name="Admin Web Resources" key="resources">
         <dependency>com.atlassian.auiplugin:ajs</dependency>
-        <resource type="download" name="admin.js" location="admin.js"/>
+        <resource type="download" name="admin.js" location="/js/admin.js"/>
     </web-resource>
 
     <!-- Add-on web item to show in Global Settings menu -->
