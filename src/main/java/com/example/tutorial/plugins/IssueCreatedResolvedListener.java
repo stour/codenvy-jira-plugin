@@ -13,6 +13,8 @@ import com.atlassian.jira.config.properties.APKeys;
 import com.atlassian.jira.event.issue.IssueEvent;
 import com.atlassian.jira.event.type.EventType;
 import com.atlassian.jira.issue.Issue;
+import com.atlassian.sal.api.pluginsettings.PluginSettings;
+import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,19 +34,17 @@ public class IssueCreatedResolvedListener implements InitializingBean, Disposabl
 
     private static final Logger LOG = LoggerFactory.getLogger(IssueCreatedResolvedListener.class);
 
-    private static final String CODENVY_INSTANCE_API_URL = "http://internal.codenvycorp.com/api";
-    private static final String CODENVY_JIRA_USERNAME    = "alt.ya-4gjloe3@yopmail.com";
-    private static final String CODENVY_JIRA_PASSWORD    = "codenvy2015";
-
-    private final EventPublisher eventPublisher;
-    private final String         jiraBaseUrl;
+    private final EventPublisher        eventPublisher;
+    private final PluginSettingsFactory pluginSettingsFactory;
+    private final String                jiraBaseUrl;
 
     /**
      * Constructor.
      * @param eventPublisher injected {@code EventPublisher} implementation.
      */
-    public IssueCreatedResolvedListener(EventPublisher eventPublisher) {
+    public IssueCreatedResolvedListener(EventPublisher eventPublisher, PluginSettingsFactory pluginSettingsFactory) {
         this.eventPublisher = eventPublisher;
+        this.pluginSettingsFactory = pluginSettingsFactory;
         this.jiraBaseUrl = ComponentAccessor.getApplicationProperties().getString(APKeys.JIRA_BASEURL);
     }
 
@@ -80,6 +80,18 @@ public class IssueCreatedResolvedListener implements InitializingBean, Disposabl
         if (eventTypeId.equals(EventType.ISSUE_CREATED_ID)) {
             LOG.info("Issue {} has been created at {}.", issue.getKey(), issue.getCreated());
 
+            // Get plugin settings
+            PluginSettings settings = pluginSettingsFactory.createGlobalSettings();
+            final String codenvyUrl = (String)settings.get("codenvy.admin.instanceurl");
+            final String codenvyUsername = (String)settings.get("codenvy.admin.username");
+            final String codenvyPassword = (String)settings.get("codenvy.admin.password");
+
+            if (codenvyUrl == null || codenvyUsername == null || codenvyPassword == null) {
+                LOG.info("codenvyUrl (" + codenvyUrl + ") or codenvyUsername (" + codenvyUsername + ") " +
+                         "or codenvyPassword (" + codenvyPassword + ") is not set.");
+                return;
+            }
+
             try {
                 JSONObject token = null;
                 final Resty resty = new Resty();
@@ -87,9 +99,9 @@ public class IssueCreatedResolvedListener implements InitializingBean, Disposabl
 
                 // Authenticate on Codenvy as JIRA admin
                 final String credentials =
-                        "{ \"username\": \"" + CODENVY_JIRA_USERNAME + "\", \"password\": \"" + CODENVY_JIRA_PASSWORD + "\" }";
+                        "{ \"username\": \"" + codenvyUsername + "\", \"password\": \"" + codenvyPassword + "\" }";
                 JSONObject cred = new JSONObject(credentials);
-                token = resty.json(CODENVY_INSTANCE_API_URL + "/auth/login", content(cred)).object();
+                token = resty.json(codenvyUrl + "/api/auth/login", content(cred)).object();
                 LOG.info("Codenvy token: " + token);
 
 
@@ -100,7 +112,7 @@ public class IssueCreatedResolvedListener implements InitializingBean, Disposabl
                     final String projectName = issue.getProjectObject().getName();
                     final String tokenValue = token.getString("value");
                     final JSONArray factories =
-                            resty.json(CODENVY_INSTANCE_API_URL + "/factory/find?name=" + projectKey.toLowerCase() + "&token=" + tokenValue)
+                            resty.json(codenvyUrl + "/api/factory/find?name=" + projectKey.toLowerCase() + "&token=" + tokenValue)
                                  .array();
 
                     if (factories.length() == 0) {
@@ -127,7 +139,7 @@ public class IssueCreatedResolvedListener implements InitializingBean, Disposabl
 
                     // Generate Develop factory
                     final JSONObject generatedDevelopFactory =
-                            resty.json(CODENVY_INSTANCE_API_URL + "/factory", content(developFactory)).object();
+                            resty.json(codenvyUrl + "/api/factory", content(developFactory)).object();
                     LOG.info("Generated DEVELOP factory for issue " + issueKey + ": " + generatedDevelopFactory);
 
                     // Set perClick policy & correct name (Review factory)
@@ -137,7 +149,7 @@ public class IssueCreatedResolvedListener implements InitializingBean, Disposabl
 
                     // Generate Review factory
                     final JSONObject generatedReviewFactory =
-                            resty.json(CODENVY_INSTANCE_API_URL + "/factory", content(reviewFactory)).object();
+                            resty.json(codenvyUrl + "/api/factory", content(reviewFactory)).object();
                     LOG.info("Generated REVIEW factory for issue " + issueKey + ": " + generatedReviewFactory);
 
                     // Get id of custom fields Develop & Review
