@@ -3,16 +3,22 @@ package com.example.tutorial.plugins;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
-import us.monoid.web.JSONResource;
 import us.monoid.web.Resty;
 
+import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.event.api.EventListener;
 import com.atlassian.event.api.EventPublisher;
-import com.atlassian.jira.component.ComponentAccessor;
-import com.atlassian.jira.config.properties.APKeys;
+import com.atlassian.jira.issue.fields.CustomField;
+import com.atlassian.jira.issue.fields.FieldException;
+import com.atlassian.jira.issue.fields.FieldManager;
+import com.atlassian.jira.bc.issue.IssueService;
 import com.atlassian.jira.event.issue.IssueEvent;
 import com.atlassian.jira.event.type.EventType;
 import com.atlassian.jira.issue.Issue;
+import com.atlassian.jira.issue.IssueInputParameters;
+import com.atlassian.jira.issue.MutableIssue;
+import com.atlassian.jira.user.ApplicationUser;
+import com.atlassian.jira.user.ApplicationUsers;
 import com.atlassian.sal.api.pluginsettings.PluginSettings;
 import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
 
@@ -22,13 +28,12 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
 import java.io.IOException;
+import java.util.Set;
 
 import static us.monoid.web.Resty.content;
-import static us.monoid.web.Resty.put;
 
 /**
- * Simple JIRA listener using the atlassian-event library and demonstrating
- * plugin lifecycle integration.
+ * JIRA listener that generates Codenvy factories for factory activated issues.
  */
 public class IssueCreatedResolvedListener implements InitializingBean, DisposableBean {
 
@@ -36,16 +41,19 @@ public class IssueCreatedResolvedListener implements InitializingBean, Disposabl
 
     private final EventPublisher        eventPublisher;
     private final PluginSettingsFactory pluginSettingsFactory;
-    private final String                jiraBaseUrl;
+    private final IssueService          issueService;
+    private final FieldManager          fieldManager;
 
     /**
      * Constructor.
      * @param eventPublisher injected {@code EventPublisher} implementation.
      */
-    public IssueCreatedResolvedListener(EventPublisher eventPublisher, PluginSettingsFactory pluginSettingsFactory) {
+    public IssueCreatedResolvedListener(EventPublisher eventPublisher, PluginSettingsFactory pluginSettingsFactory,
+                                        IssueService issueService, FieldManager fieldManager) {
         this.eventPublisher = eventPublisher;
         this.pluginSettingsFactory = pluginSettingsFactory;
-        this.jiraBaseUrl = ComponentAccessor.getApplicationProperties().getString(APKeys.JIRA_BASEURL);
+        this.issueService = issueService;
+        this.fieldManager = fieldManager;
     }
 
     /**
@@ -74,8 +82,8 @@ public class IssueCreatedResolvedListener implements InitializingBean, Disposabl
      */
     @EventListener
     public void onIssueEvent(IssueEvent issueEvent) {
-        Long eventTypeId = issueEvent.getEventTypeId();
-        Issue issue = issueEvent.getIssue();
+        final Long eventTypeId = issueEvent.getEventTypeId();
+        final Issue issue = issueEvent.getIssue();
         // if it's an event we're interested in, log it
         if (eventTypeId.equals(EventType.ISSUE_CREATED_ID)) {
             LOG.info("Issue {} has been created at {}.", issue.getKey(), issue.getCreated());
@@ -93,122 +101,130 @@ public class IssueCreatedResolvedListener implements InitializingBean, Disposabl
             }
 
             try {
+
+                final String issueKey = issue.getKey();
+                final String projectKey = issue.getProjectObject().getKey();
+                final String projectName = issue.getProjectObject().getName();
+
+                // Get current JIRA user
+                final User eventUser = issueEvent.getUser();
+                if (eventUser == null) {
+                    LOG.info("No user given in issue event.");
+                    return;
+                }
+                final ApplicationUser appUser = ApplicationUsers.from(eventUser);
+
+                // Get id of custom fields Develop & Review
+                String developFieldId = null;
+                String reviewFieldId = null;
+                final Set<CustomField> customFields = fieldManager.getAvailableCustomFields(eventUser, issue);
+                for (CustomField cf : customFields) {
+                    if ("Develop".equals(cf.getFieldName())) {
+                        developFieldId = cf.getId();
+                    }
+                    if ("Review".equals(cf.getFieldName())) {
+                        reviewFieldId = cf.getId();
+                    }
+                }
+
+                // Continue only if Develop and Review fields are available on the issue
+                if (developFieldId == null || reviewFieldId == null) {
+                    LOG.info("Field Develop (" + developFieldId + ") and/or Review (" + reviewFieldId + ") are not available for issue " +
+                             issueKey + ".");
+                    return;
+                }
+
                 JSONObject token = null;
                 final Resty resty = new Resty();
-                resty.withHeader("Authorization", "Basic YWRtaW46YWRtaW4=");
 
                 // Authenticate on Codenvy as JIRA admin
                 final String credentials =
                         "{ \"username\": \"" + codenvyUsername + "\", \"password\": \"" + codenvyPassword + "\" }";
                 JSONObject cred = new JSONObject(credentials);
                 token = resty.json(codenvyUrl + "/api/auth/login", content(cred)).object();
-                LOG.info("Codenvy token: " + token);
 
-
-                if (token != null) {
-                    // Get parent factory for project
-                    final String issueKey = issue.getKey();
-                    final String projectKey = issue.getProjectObject().getKey();
-                    final String projectName = issue.getProjectObject().getName();
-                    final String tokenValue = token.getString("value");
-                    final JSONArray factories =
-                            resty.json(codenvyUrl + "/api/factory/find?name=" + projectKey.toLowerCase() + "&token=" + tokenValue)
-                                 .array();
-
-                    if (factories.length() == 0) {
-                        LOG.info("No factory found with name: " + projectKey.toLowerCase());
-                        return;
-                    }
-
-                    JSONObject parentFactory = factories.getJSONObject(0);
-                    LOG.info("Parent factory for project " + projectName + ": " + parentFactory);
-
-                    // Set perUser policy & correct name (Develop factory)
-                    final JSONObject developFactory = setCreatePolicy(parentFactory, "perUser");
-                    developFactory.remove("name");
-                    developFactory.put("name", issueKey + "-develop-factory");
-
-                    // Clean id and creator
-                    developFactory.remove("id");
-                    developFactory.remove("creator");
-
-                    // Set workspace.projects.source.parameters.branch = issue key
-                    final JSONObject project = developFactory.getJSONObject("workspace").getJSONArray("projects").getJSONObject(0);
-                    final JSONObject parameters = project.getJSONObject("source").getJSONObject("parameters");
-                    parameters.put("branch", issueKey);
-
-                    // Generate Develop factory
-                    final JSONObject generatedDevelopFactory =
-                            resty.json(codenvyUrl + "/api/factory", content(developFactory)).object();
-                    LOG.info("Generated DEVELOP factory for issue " + issueKey + ": " + generatedDevelopFactory);
-
-                    // Set perClick policy & correct name (Review factory)
-                    final JSONObject reviewFactory = setCreatePolicy(developFactory, "perClick");
-                    reviewFactory.remove("name");
-                    reviewFactory.put("name", issueKey + "-review-factory");
-
-                    // Generate Review factory
-                    final JSONObject generatedReviewFactory =
-                            resty.json(codenvyUrl + "/api/factory", content(reviewFactory)).object();
-                    LOG.info("Generated REVIEW factory for issue " + issueKey + ": " + generatedReviewFactory);
-
-                    // Get id of custom fields Develop & Review
-                    JSONResource resultGetFields = resty.json(jiraBaseUrl + "/rest/api/2/field");
-
-                    if (resultGetFields.http().getResponseCode() != 200) {
-                        LOG.info("GET " + jiraBaseUrl + "/rest/api/2/field failed with code " +
-                                 resultGetFields.http().getResponseCode() + ": " + resultGetFields.http().getResponseMessage());
-                        return;
-                    }
-
-                    String developFieldId = null;
-                    String reviewFieldId = null;
-                    final JSONArray fields = resultGetFields.array();
-                    for (int i = 0; i < fields.length(); i++) {
-                        JSONObject field = fields.getJSONObject(i);
-                        final boolean custom = field.getBoolean("custom");
-                        final String name = field.getString("name");
-                        if (custom) {
-                            if ("Develop".equals(name)) {
-                                developFieldId = field.getString("id");
-                            }
-                            if ("Review".equals(name)) {
-                                reviewFieldId = field.getString("id");
-                            }
-                        }
-                    }
-
-                    // Set factory URLs in Develop & Review fields
-                    if (developFieldId == null || reviewFieldId == null) {
-                        LOG.info("Id of field Develop (" + developFieldId + ") and/or Review (" + reviewFieldId + ") is null.");
-                        return;
-                    }
-                    String developFactoryUrl = getNamedFactoryUrl(generatedDevelopFactory);
-                    String reviewFactoryUrl = getNamedFactoryUrl(generatedReviewFactory);
-
-                    if (developFactoryUrl == null || reviewFactoryUrl == null) {
-                        LOG.info("URL of factory Develop (" + developFactoryUrl + ") and/or Review (" + reviewFactoryUrl +
-                                 ") is null.");
-                        return;
-                    }
-
-                    JSONObject update = new JSONObject().put("fields",
-                                                             new JSONObject().put(developFieldId, developFactoryUrl)
-                                                                             .put(reviewFieldId, reviewFactoryUrl));
-                    LOG.info("update: " + update);
-                    JSONResource resultUpdateIssue =
-                            resty.json(jiraBaseUrl + "/rest/api/2/issue/" + issueKey, put(content(update)));
-                    int responseHttpCode = resultUpdateIssue.http().getResponseCode();
-                    if (responseHttpCode != 204) {
-                        LOG.info("Update of issue " + issueKey + " failed with code " + responseHttpCode + ": " +
-                                 resultUpdateIssue.http().getResponseMessage());
-                    } else {
-                        LOG.info("Issue " + issueKey + " successfully updated with code " + responseHttpCode);
-                    }
+                if (token == null) {
+                    LOG.info("No Codenvy Token obtained.");
+                    return;
                 }
-            } catch (JSONException | IOException e) {
+
+                // Get parent factory for project
+                final String tokenValue = token.getString("value");
+                final JSONArray factories =
+                        resty.json(codenvyUrl + "/api/factory/find?name=" + projectKey.toLowerCase() + "&token=" + tokenValue)
+                             .array();
+
+                if (factories.length() == 0) {
+                    LOG.info("No factory found with name: " + projectKey.toLowerCase());
+                    return;
+                }
+
+                JSONObject parentFactory = factories.getJSONObject(0);
+                LOG.info("Parent factory for project " + projectName + ": " + parentFactory);
+
+                // Set perUser policy & correct name (Develop factory)
+                final JSONObject developFactory = setCreatePolicy(parentFactory, "perUser");
+                developFactory.remove("name");
+                developFactory.put("name", issueKey + "-develop-factory");
+
+                // Clean id and creator
+                developFactory.remove("id");
+                developFactory.remove("creator");
+
+                // Set workspace.projects.source.parameters.branch = issue key
+                final JSONObject project = developFactory.getJSONObject("workspace").getJSONArray("projects").getJSONObject(0);
+                final JSONObject parameters = project.getJSONObject("source").getJSONObject("parameters");
+                parameters.put("branch", issueKey);
+
+                // Generate Develop factory
+                final JSONObject generatedDevelopFactory =
+                        resty.json(codenvyUrl + "/api/factory", content(developFactory)).object();
+                LOG.info("Generated DEVELOP factory for issue " + issueKey + ": " + generatedDevelopFactory);
+
+                // Set perClick policy & correct name (Review factory)
+                final JSONObject reviewFactory = setCreatePolicy(developFactory, "perClick");
+                reviewFactory.remove("name");
+                reviewFactory.put("name", issueKey + "-review-factory");
+
+                // Generate Review factory
+                final JSONObject generatedReviewFactory =
+                        resty.json(codenvyUrl + "/api/factory", content(reviewFactory)).object();
+                LOG.info("Generated REVIEW factory for issue " + issueKey + ": " + generatedReviewFactory);
+
+                // Set factory URLs in Develop & Review fields
+                String developFactoryUrl = getNamedFactoryUrl(generatedDevelopFactory);
+                String reviewFactoryUrl = getNamedFactoryUrl(generatedReviewFactory);
+
+                if (developFactoryUrl == null || reviewFactoryUrl == null) {
+                    LOG.info("URL of factory Develop (" + developFactoryUrl + ") and/or Review (" + reviewFactoryUrl +
+                             ") is null.");
+                    return;
+                }
+
+                updateIssue(appUser, issueKey, developFieldId, developFactoryUrl, reviewFieldId, reviewFactoryUrl);
+            } catch (JSONException | IOException | FieldException e) {
                 LOG.info(e.getMessage());
             }
+        }
+    }
+
+    private void updateIssue(ApplicationUser appUser, String issueKey, String developFieldId, String developValue,
+                             String reviewFieldId, String reviewValue) {
+        // Get the issue from the key that's passed in
+        IssueService.IssueResult issueResult = issueService.getIssue(appUser, issueKey);
+        MutableIssue issue = issueResult.getIssue();
+        // Next we need to validate the updated issue
+        IssueInputParameters issueInputParameters = issueService.newIssueInputParameters();
+        issueInputParameters.addCustomFieldValue(developFieldId, developValue);
+        issueInputParameters.addCustomFieldValue(reviewFieldId, reviewValue);
+        IssueService.UpdateValidationResult result = issueService.validateUpdate(appUser, issue.getId(),
+                                                                                 issueInputParameters);
+        if (result.getErrorCollection().hasAnyErrors()) {
+            LOG.info("Issue " + issueKey + " not updated due to error(s): " + result.getErrorCollection().getErrorMessages() + ".");
+        } else {
+            // Validation passes
+            issueService.update(appUser, result);
+            LOG.info("Issue " + issueKey + " successfully updated.");
         }
     }
 
