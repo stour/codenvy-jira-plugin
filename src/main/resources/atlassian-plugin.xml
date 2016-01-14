@@ -31,7 +31,7 @@
 
     <component-import key="eventPublisher" interface="com.atlassian.event.api.EventPublisher"/>
     <component key="eventListener" class="com.example.tutorial.plugins.IssueCreatedResolvedListener">
-        <description>Class that processes the incoming JIRA issue events.</description>
+        <description>Class that generates a Codenvy factory when a new factory enabled issue is created.</description>
     </component>
 
     <!-- Add-on admin page components -->
@@ -47,7 +47,7 @@
         <url-pattern>/codenvy/admin</url-pattern>
     </servlet>
     <rest key="rest" path="/codenvy-admin" version="1.0">
-        <description>Provides REST resources for the Codenvy admin UI.</description>
+        <description>Provides REST resources for the Codenvy add-on admin UI.</description>
     </rest>
     <web-resource name="Admin Web Resources" key="resources">
         <dependency>com.atlassian.auiplugin:ajs</dependency>
@@ -57,7 +57,7 @@
     <!-- Add-on web item to show in Global Settings menu -->
     <web-item key="jira-menu-item" name="Codenvy Admin" section="system.admin/globalsettings" weight="10" application="jira">
         <description>Link to codenvy admin page.</description>
-        <label key="Codenvy administration" />
+        <label key="Codenvy Administration" />
         <link linkId="codenvy-admin-link">/plugins/servlet/codenvy/admin</link>
     </web-item>
 </atlassian-plugin>

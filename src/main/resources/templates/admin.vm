@@ -1,13 +1,13 @@
 <html>
 <head>
-    <title>Codenvy Admin</title>
+    <title>Codenvy Administration</title>
     <meta name="decorator" content="atl.admin">
     $webResourceManager.requireResource("com.example.tutorial.plugins.new-listener-plugin:resources")
 </head>
 <body>
 <form id="admin" class="aui">
     <div class="field-group">
-        <label for="instanceUrl">Instance URL:</label>
+        <label for="instanceUrl">Codenvy URL:</label>
         <input type="text" id="instanceUrl" name="instanceUrl" class="text">
     </div>
     <div class="field-group">
