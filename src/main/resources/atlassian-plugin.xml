@@ -60,4 +60,22 @@
         <label key="Codenvy Administration" />
         <link linkId="codenvy-admin-link">/plugins/servlet/codenvy/admin</link>
     </web-item>
+
+    <!-- Develop custom field type -->
+    <customfield-type key="developfield" name="Codenvy Develop Field"
+                      class="com.example.tutorial.plugins.DevelopCustomField">
+        <description>Open your Codenvy workspace in one click.</description>
+        <resource type="velocity" name="view" location="templates/view-codenvy-develop-field.vm"/>
+        <resource type="velocity" name="edit" location="templates/edit-codenvy-field.vm"/>
+        <resource type="velocity" name="xml" location="templates/plugins/fields/xml/xml-basictext.vm"/>
+    </customfield-type>
+
+    <!-- Review custom field type -->
+    <customfield-type key="reviewfield" name="Codenvy Review Field"
+                      class="com.example.tutorial.plugins.ReviewCustomField">
+        <description>Open a per click Codenvy workspace in one click.</description>
+        <resource type="velocity" name="view" location="templates/view-codenvy-review-field.vm"/>
+        <resource type="velocity" name="edit" location="templates/edit-codenvy-field.vm"/>
+        <resource type="velocity" name="xml" location="templates/plugins/fields/xml/xml-basictext.vm"/>
+    </customfield-type>
 </atlassian-plugin>

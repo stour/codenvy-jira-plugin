@@ -1,0 +1,6 @@
+#enable_html_escaping()
+#if ($value)
+    <div>
+        <a id="codenvy_review_field" href="$!value">Click to review</a>
+    </div>
+#end
