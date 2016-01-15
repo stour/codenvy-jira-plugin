@@ -19,6 +19,8 @@ AJS.toInit(function() {
             contentType: "application/json",
             data: '{ "instanceUrl": "' + AJS.$("#instanceUrl").attr("value") + '", "username": "' + AJS.$("#username").attr("value") + '", "password": "' + AJS.$("#password").attr("value") + '" }',
             processData: false
+        }).done(function( data ) {
+            alert("Codenvy data successfully saved.");
         });
     }
     populateForm();
