@@ -15,9 +15,9 @@ public class CodenvyPluginComponentImpl implements CodenvyPluginComponent
     {
         if(null != applicationProperties)
         {
-            return "myComponent:" + applicationProperties.getDisplayName();
+            return "CodenvyComponent:" + applicationProperties.getDisplayName();
         }
         
-        return "myComponent";
+        return "CodenvyComponent";
     }
 }
