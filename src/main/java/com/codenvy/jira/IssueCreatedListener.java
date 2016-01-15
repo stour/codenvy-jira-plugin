@@ -134,14 +134,13 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
                     return;
                 }
 
-                JSONObject token = null;
+                JSONObject token;
                 final Resty resty = new Resty();
 
                 // Authenticate on Codenvy as JIRA admin
-                final String credentials =
-                        "{ \"username\": \"" + codenvyUsername + "\", \"password\": \"" + codenvyPassword + "\" }";
-                JSONObject cred = new JSONObject(credentials);
-                token = resty.json(codenvyUrl + "/api/auth/login", content(cred)).object();
+                final JSONObject credentials =
+                        new JSONObject().put("username", codenvyUsername).put("password", codenvyPassword);
+                token = resty.json(codenvyUrl + "/api/auth/login", content(credentials)).object();
 
                 if (token == null) {
                     LOG.info("No Codenvy Token obtained.");
