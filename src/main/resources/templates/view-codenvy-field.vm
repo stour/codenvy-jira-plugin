@@ -1,0 +1,5 @@
+#enable_html_escaping()
+#if ($value)
+    #set ( $contentAsHtml = $value )
+    $contentAsHtml
+#end

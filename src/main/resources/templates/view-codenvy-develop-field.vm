@@ -1,6 +1,0 @@
-#enable_html_escaping()
-#if ($value)
-    <div>
-        <a id="codenvy_develop_field" href="$!value">Click to develop</a>
-    </div>
-#end

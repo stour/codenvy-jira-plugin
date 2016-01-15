@@ -65,7 +65,7 @@
     <customfield-type key="developfield" name="Codenvy Develop Field"
                       class="com.codenvy.jira.customfield.DevelopCustomField">
         <description>Open your Codenvy workspace in one click.</description>
-        <resource type="velocity" name="view" location="templates/view-codenvy-develop-field.vm"/>
+        <resource type="velocity" name="view" location="templates/view-codenvy-field.vm"/>
         <resource type="velocity" name="edit" location="templates/edit-codenvy-field.vm"/>
         <resource type="velocity" name="xml" location="templates/plugins/fields/xml/xml-basictext.vm"/>
     </customfield-type>
@@ -74,7 +74,7 @@
     <customfield-type key="reviewfield" name="Codenvy Review Field"
                       class="com.codenvy.jira.customfield.ReviewCustomField">
         <description>Open a per click Codenvy workspace in one click.</description>
-        <resource type="velocity" name="view" location="templates/view-codenvy-review-field.vm"/>
+        <resource type="velocity" name="view" location="templates/view-codenvy-field.vm"/>
         <resource type="velocity" name="edit" location="templates/edit-codenvy-field.vm"/>
         <resource type="velocity" name="xml" location="templates/plugins/fields/xml/xml-basictext.vm"/>
     </customfield-type>

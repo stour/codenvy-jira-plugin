@@ -204,7 +204,11 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
                     return;
                 }
 
-                updateIssue(appUser, issueKey, developFieldId, developFactoryUrl, reviewFieldId, reviewFactoryUrl);
+                String developFieldValue = "<a id=\"codenvy_develop_field\" href=\"" + developFactoryUrl + "\">Click to develop</a>";
+                String reviewFieldValue = "<a id=\"codenvy_review_field\" href=\"" + reviewFactoryUrl + "\">Click to review</a>";
+
+                updateIssue(appUser, issueKey, developFieldId, developFieldValue, reviewFieldId, reviewFieldValue);
+
             } catch (JSONException | IOException | FieldException e) {
                 LOG.info(e.getMessage());
             }
@@ -227,7 +231,7 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
         } else {
             // Validation passes
             issueService.update(appUser, result);
-            LOG.info("Issue " + issueKey + " successfully updated.");
+            LOG.info("Codenvy fields successfully updated on issue " + issueKey + ".");
         }
     }
 
