@@ -1,4 +1,4 @@
-package com.example.tutorial.plugins;
+package com.codenvy.jira;
 
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
@@ -35,9 +35,9 @@ import static us.monoid.web.Resty.content;
 /**
  * JIRA listener that generates Codenvy factories for factory activated issues.
  */
-public class IssueCreatedResolvedListener implements InitializingBean, DisposableBean {
+public class IssueCreatedListener implements InitializingBean, DisposableBean {
 
-    private static final Logger LOG = LoggerFactory.getLogger(IssueCreatedResolvedListener.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IssueCreatedListener.class);
 
     private final EventPublisher        eventPublisher;
     private final PluginSettingsFactory pluginSettingsFactory;
@@ -48,8 +48,8 @@ public class IssueCreatedResolvedListener implements InitializingBean, Disposabl
      * Constructor.
      * @param eventPublisher injected {@code EventPublisher} implementation.
      */
-    public IssueCreatedResolvedListener(EventPublisher eventPublisher, PluginSettingsFactory pluginSettingsFactory,
-                                        IssueService issueService, FieldManager fieldManager) {
+    public IssueCreatedListener(EventPublisher eventPublisher, PluginSettingsFactory pluginSettingsFactory,
+                                IssueService issueService, FieldManager fieldManager) {
         this.eventPublisher = eventPublisher;
         this.pluginSettingsFactory = pluginSettingsFactory;
         this.issueService = issueService;

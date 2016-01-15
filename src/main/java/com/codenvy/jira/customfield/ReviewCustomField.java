@@ -1,4 +1,4 @@
-package com.example.tutorial.plugins;
+package com.codenvy.jira.customfield;
 
 import com.atlassian.jira.issue.customfields.impl.GenericTextCFType;
 import com.atlassian.jira.issue.customfields.manager.GenericConfigManager;

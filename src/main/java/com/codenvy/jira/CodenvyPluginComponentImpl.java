@@ -1,12 +1,12 @@
-package com.example.tutorial.plugins;
+package com.codenvy.jira;
 
 import com.atlassian.sal.api.ApplicationProperties;
 
-public class MyPluginComponentImpl implements MyPluginComponent
+public class CodenvyPluginComponentImpl implements CodenvyPluginComponent
 {
     private final ApplicationProperties applicationProperties;
 
-    public MyPluginComponentImpl(ApplicationProperties applicationProperties)
+    public CodenvyPluginComponentImpl(ApplicationProperties applicationProperties)
     {
         this.applicationProperties = applicationProperties;
     }

@@ -1,4 +1,4 @@
-package com.example.tutorial.plugins;
+package com.codenvy.jira.administrate;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;

@@ -8,29 +8,29 @@
     </plugin-info>
 
     <!-- add our i18n resource -->
-    <resource type="i18n" name="i18n" location="new-listener-plugin"/>
+    <resource type="i18n" name="i18n" location="codenvy-jira-plugin"/>
     
     <!-- add our web resources -->
-    <web-resource key="new-listener-plugin-resources" name="new-listener-plugin Web Resources">
+    <web-resource key="codenvy-jira-plugin-resources" name="codenvy-jira-plugin Web Resources">
         <dependency>com.atlassian.auiplugin:ajs</dependency>
         
-        <resource type="download" name="new-listener-plugin.css" location="/css/new-listener-plugin.css"/>
-        <resource type="download" name="new-listener-plugin.js" location="/js/new-listener-plugin.js"/>
+        <resource type="download" name="codenvy-jira-plugin.css" location="/css/codenvy-jira-plugin.css"/>
+        <resource type="download" name="codenvy-jira-plugin.js" location="/js/codenvy-jira-plugin.js"/>
         <resource type="download" name="images/" location="/images"/>
 
-        <context>new-listener-plugin</context>
+        <context>codenvy-jira-plugin</context>
     </web-resource>
     
     <!-- publish our component -->
-    <component key="myPluginComponent" class="com.example.tutorial.plugins.MyPluginComponentImpl" public="true">
-        <interface>com.example.tutorial.plugins.MyPluginComponent</interface>
+    <component key="codenvyPluginComponent" class="com.codenvy.jira.CodenvyPluginComponentImpl" public="true">
+        <interface>com.codenvy.jira.CodenvyPluginComponent</interface>
     </component>
     
     <!-- import from the product container -->
     <component-import key="applicationProperties" interface="com.atlassian.sal.api.ApplicationProperties" />
 
     <component-import key="eventPublisher" interface="com.atlassian.event.api.EventPublisher"/>
-    <component key="eventListener" class="com.example.tutorial.plugins.IssueCreatedResolvedListener">
+    <component key="eventListener" class="com.codenvy.jira.IssueCreatedListener">
         <description>Class that generates a Codenvy factory when a new factory enabled issue is created.</description>
     </component>
 
@@ -43,11 +43,11 @@
     <component-import key="fieldManager" interface="com.atlassian.jira.issue.fields.FieldManager" />
 
     <!-- Add-on admin resources -->
-    <servlet key="admin-servlet" class="com.example.tutorial.plugins.AdminServlet">
+    <servlet key="admin-servlet" class="com.codenvy.jira.administrate.AdminServlet">
         <url-pattern>/codenvy/admin</url-pattern>
     </servlet>
     <rest key="rest" path="/codenvy-admin" version="1.0">
-        <description>Provides REST resources for the Codenvy add-on admin UI.</description>
+        <description>Provides REST resources for the Codenvy plugin admin UI.</description>
     </rest>
     <web-resource name="Admin Web Resources" key="resources">
         <dependency>com.atlassian.auiplugin:ajs</dependency>
@@ -63,7 +63,7 @@
 
     <!-- Develop custom field type -->
     <customfield-type key="developfield" name="Codenvy Develop Field"
-                      class="com.example.tutorial.plugins.DevelopCustomField">
+                      class="com.codenvy.jira.customfield.DevelopCustomField">
         <description>Open your Codenvy workspace in one click.</description>
         <resource type="velocity" name="view" location="templates/view-codenvy-develop-field.vm"/>
         <resource type="velocity" name="edit" location="templates/edit-codenvy-field.vm"/>
@@ -72,7 +72,7 @@
 
     <!-- Review custom field type -->
     <customfield-type key="reviewfield" name="Codenvy Review Field"
-                      class="com.example.tutorial.plugins.ReviewCustomField">
+                      class="com.codenvy.jira.customfield.ReviewCustomField">
         <description>Open a per click Codenvy workspace in one click.</description>
         <resource type="velocity" name="view" location="templates/view-codenvy-review-field.vm"/>
         <resource type="velocity" name="edit" location="templates/edit-codenvy-field.vm"/>

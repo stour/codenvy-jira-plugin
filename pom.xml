@@ -2,15 +2,15 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.example.tutorial.plugins</groupId>
-    <artifactId>new-listener-plugin</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <groupId>com.codenvy.jira</groupId>
+    <artifactId>codenvy-jira-plugin</artifactId>
+    <version>1.0.0</version>
     <organization>
-        <name>Atlassian Tutorials, Inc</name>
-        <url>http://tutorials.example.com/</url>
+        <name>Codenvy</name>
+        <url>http://www.codenvy.com</url>
     </organization>
-    <name>new-listener-plugin</name>
-    <description>This plugin implements a simple issue event listener for JIRA using atlassian-event.</description>
+    <name>codenvy-jira-plugin</name>
+    <description>This plugin activates Codenvy factories in JIRA issues.</description>
     <packaging>atlassian-plugin</packaging>
     <dependencies>
         <dependency>
