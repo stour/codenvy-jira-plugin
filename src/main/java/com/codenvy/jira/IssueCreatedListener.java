@@ -39,6 +39,9 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
 
     private static final Logger LOG = LoggerFactory.getLogger(IssueCreatedListener.class);
 
+    private static final String CODENVY_DEVELOP_FIELD_TYPE_KEY = "com.codenvy.jira.codenvy-jira-plugin:developfield";
+    private static final String CODENVY_REVIEW_FIELD_TYPE_KEY  = "com.codenvy.jira.codenvy-jira-plugin:reviewfield";
+
     private final EventPublisher        eventPublisher;
     private final PluginSettingsFactory pluginSettingsFactory;
     private final IssueService          issueService;
@@ -119,10 +122,11 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
                 String reviewFieldId = null;
                 final Set<CustomField> customFields = fieldManager.getAvailableCustomFields(eventUser, issue);
                 for (CustomField cf : customFields) {
-                    if ("Develop".equals(cf.getFieldName())) {
+                    String customFieldTypeKey = cf.getCustomFieldType().getKey();
+                    if (CODENVY_DEVELOP_FIELD_TYPE_KEY.equals(customFieldTypeKey)) {
                         developFieldId = cf.getId();
                     }
-                    if ("Review".equals(cf.getFieldName())) {
+                    if (CODENVY_REVIEW_FIELD_TYPE_KEY.equals(customFieldTypeKey)) {
                         reviewFieldId = cf.getId();
                     }
                 }
