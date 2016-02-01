@@ -89,8 +89,6 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
         final Issue issue = issueEvent.getIssue();
         // if it's an event we're interested in, log it
         if (eventTypeId.equals(EventType.ISSUE_CREATED_ID)) {
-            LOG.info("Issue {} has been created at {}.", issue.getKey(), issue.getCreated());
-
             // Get plugin settings
             PluginSettings settings = pluginSettingsFactory.createGlobalSettings();
             final String codenvyUrl = (String)settings.get("codenvy.admin.instanceurl");
@@ -98,8 +96,8 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
             final String codenvyPassword = (String)settings.get("codenvy.admin.password");
 
             if (codenvyUrl == null || codenvyUsername == null || codenvyPassword == null) {
-                LOG.info("codenvyUrl (" + codenvyUrl + ") or codenvyUsername (" + codenvyUsername + ") " +
-                         "or codenvyPassword (" + codenvyPassword + ") is not set.");
+                LOG.warn("codenvy URL (" + codenvyUrl + "), username (" + codenvyUsername + ") " +
+                          "or password (" + codenvyPassword + ") is not set.");
                 return;
             }
 
@@ -112,7 +110,7 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
                 // Get current JIRA user
                 final User eventUser = issueEvent.getUser();
                 if (eventUser == null) {
-                    LOG.info("No user given in issue event.");
+                    LOG.warn("No user given in issue event.");
                     return;
                 }
                 final ApplicationUser appUser = ApplicationUsers.from(eventUser);
@@ -133,7 +131,7 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
 
                 // Continue only if Develop and Review fields are available on the issue
                 if (developFieldId == null || reviewFieldId == null) {
-                    LOG.info("Field Develop (" + developFieldId + ") and/or Review (" + reviewFieldId + ") are not available for issue " +
+                    LOG.warn("Field Develop (" + developFieldId + ") and/or Review (" + reviewFieldId + ") are not available for issue " +
                              issueKey + ".");
                     return;
                 }
@@ -147,7 +145,7 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
                 token = resty.json(codenvyUrl + "/api/auth/login", content(credentials)).object();
 
                 if (token == null) {
-                    LOG.info("No Codenvy Token obtained.");
+                    LOG.warn("No Codenvy Token obtained.");
                     return;
                 }
 
@@ -158,12 +156,12 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
                              .array();
 
                 if (factories.length() == 0) {
-                    LOG.info("No factory found with name: " + projectKey.toLowerCase());
+                    LOG.warn("No factory found with name: " + projectKey.toLowerCase());
                     return;
                 }
 
                 JSONObject parentFactory = factories.getJSONObject(0);
-                LOG.info("Parent factory for project " + projectName + ": " + parentFactory);
+                LOG.debug("Parent factory for project " + projectName + ": " + parentFactory);
 
                 // Set perUser policy & correct name (Develop factory)
                 final JSONObject developFactory = setCreatePolicy(parentFactory, "perUser");
@@ -182,7 +180,7 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
                 // Generate Develop factory
                 final JSONObject generatedDevelopFactory =
                         resty.json(codenvyUrl + "/api/factory", content(developFactory)).object();
-                LOG.info("Generated DEVELOP factory for issue " + issueKey + ": " + generatedDevelopFactory);
+                LOG.debug("Generated DEVELOP factory for issue " + issueKey + ": " + generatedDevelopFactory);
 
                 // Set perClick policy & correct name (Review factory)
                 final JSONObject reviewFactory = setCreatePolicy(developFactory, "perClick");
@@ -192,25 +190,25 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
                 // Generate Review factory
                 final JSONObject generatedReviewFactory =
                         resty.json(codenvyUrl + "/api/factory", content(reviewFactory)).object();
-                LOG.info("Generated REVIEW factory for issue " + issueKey + ": " + generatedReviewFactory);
+                LOG.debug("Generated REVIEW factory for issue " + issueKey + ": " + generatedReviewFactory);
 
                 // Set factory URLs in Develop & Review fields
                 String developFactoryUrl = getNamedFactoryUrl(generatedDevelopFactory);
                 String reviewFactoryUrl = getNamedFactoryUrl(generatedReviewFactory);
 
                 if (developFactoryUrl == null || reviewFactoryUrl == null) {
-                    LOG.info("URL of factory Develop (" + developFactoryUrl + ") and/or Review (" + reviewFactoryUrl +
-                             ") is null.");
+                    LOG.warn("URL of factory Develop (" + developFactoryUrl + ") and/or Review (" + reviewFactoryUrl +
+                              ") is null.");
                     return;
                 }
 
-                String developFieldValue = "<a id=\"codenvy_develop_field\" href=\"" + developFactoryUrl + "\">Click to develop</a>";
-                String reviewFieldValue = "<a id=\"codenvy_review_field\" href=\"" + reviewFactoryUrl + "\">Click to review</a>";
+                String developFieldValue = "<a id=\"codenvy_develop_field\" href=\"" + developFactoryUrl + "\">Develop in Codenvy</a>";
+                String reviewFieldValue = "<a id=\"codenvy_review_field\" href=\"" + reviewFactoryUrl + "\">Review in Codenvy</a>";
 
                 updateIssue(appUser, issueKey, developFieldId, developFieldValue, reviewFieldId, reviewFieldValue);
 
             } catch (JSONException | IOException | FieldException e) {
-                LOG.info(e.getMessage());
+                LOG.error(e.getMessage());
             }
         }
     }
@@ -227,11 +225,11 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
         IssueService.UpdateValidationResult result = issueService.validateUpdate(appUser, issue.getId(),
                                                                                  issueInputParameters);
         if (result.getErrorCollection().hasAnyErrors()) {
-            LOG.info("Issue " + issueKey + " not updated due to error(s): " + result.getErrorCollection().getErrorMessages() + ".");
+            LOG.warn("Issue " + issueKey + " not updated due to error(s): " + result.getErrorCollection().getErrorMessages() + ".");
         } else {
             // Validation passes
             issueService.update(appUser, result);
-            LOG.info("Codenvy fields successfully updated on issue " + issueKey + ".");
+            LOG.debug("Codenvy fields successfully updated on issue " + issueKey + ".");
         }
     }
 
