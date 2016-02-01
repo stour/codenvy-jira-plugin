@@ -97,7 +97,7 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
 
             if (codenvyUrl == null || codenvyUsername == null || codenvyPassword == null) {
                 LOG.warn("codenvy URL (" + codenvyUrl + "), username (" + codenvyUsername + ") " +
-                          "or password (" + codenvyPassword + ") is not set.");
+                         "or password (" + codenvyPassword + ") is not set.");
                 return;
             }
 
@@ -145,18 +145,26 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
                 token = resty.json(codenvyUrl + "/api/auth/login", content(credentials)).object();
 
                 if (token == null) {
-                    LOG.warn("No Codenvy Token obtained.");
+                    LOG.warn("No Codenvy Token obtained (" + codenvyUsername + ").");
+                    return;
+                }
+
+                // Get Codenvy user id
+                final JSONObject user = resty.json(codenvyUrl + "/api/user").object();
+                if (user == null) {
+                    LOG.warn("No Codenvy user found (" + codenvyUsername + ").");
                     return;
                 }
 
                 // Get parent factory for project
                 final String tokenValue = token.getString("value");
+                final String userId = user.getString("id");
                 final JSONArray factories =
-                        resty.json(codenvyUrl + "/api/factory/find?name=" + projectKey.toLowerCase() + "&token=" + tokenValue)
-                             .array();
+                        resty.json(codenvyUrl + "/api/factory/find?name=" + projectKey.toLowerCase() + "&user=" + userId + "&token=" +
+                                   tokenValue).array();
 
                 if (factories.length() == 0) {
-                    LOG.warn("No factory found with name: " + projectKey.toLowerCase());
+                    LOG.warn("No factory found with name: " + projectKey.toLowerCase() + " and userId (owner): " + userId);
                     return;
                 }
 
@@ -198,7 +206,7 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
 
                 if (developFactoryUrl == null || reviewFactoryUrl == null) {
                     LOG.warn("URL of factory Develop (" + developFactoryUrl + ") and/or Review (" + reviewFactoryUrl +
-                              ") is null.");
+                             ") is null.");
                     return;
                 }
 
