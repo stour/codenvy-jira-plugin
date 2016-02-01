@@ -159,9 +159,9 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
                 // Get parent factory for project
                 final String tokenValue = token.getString("value");
                 final String userId = user.getString("id");
-                final JSONArray factories =
-                        resty.json(codenvyUrl + "/api/factory/find?name=" + projectKey.toLowerCase() + "&user=" + userId + "&token=" +
-                                   tokenValue).array();
+                final JSONArray factories = resty.json(
+                        codenvyUrl + "/api/factory/find?name=" + projectKey.toLowerCase() + "&creator.userId=" + userId + "&token=" +
+                        tokenValue).array();
 
                 if (factories.length() == 0) {
                     LOG.warn("No factory found with name: " + projectKey.toLowerCase() + " and userId (owner): " + userId);
