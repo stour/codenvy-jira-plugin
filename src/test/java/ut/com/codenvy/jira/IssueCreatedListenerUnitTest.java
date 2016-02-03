@@ -1,5 +1,8 @@
 package ut.com.codenvy.jira;
 
+import ch.qos.logback.classic.spi.LoggingEvent;
+import ch.qos.logback.core.Appender;
+
 import com.atlassian.crowd.embedded.api.User;
 import com.atlassian.event.api.EventPublisher;
 import com.atlassian.jira.bc.issue.IssueService;
@@ -19,10 +22,14 @@ import com.codenvy.jira.IssueCreatedListener;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatcher;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 
+import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class IssueCreatedListenerUnitTest {
@@ -30,6 +37,7 @@ public class IssueCreatedListenerUnitTest {
     private EventPublisher mockEventPublisher;
     private IssueService   mockIssueService;
     private FieldManager   mockFieldManager;
+    private Appender       mockAppender;
 
     @Before
     public void setup() {
@@ -59,11 +67,17 @@ public class IssueCreatedListenerUnitTest {
 
         IssueService.IssueResult mockUpdateIssueResult = mock(IssueService.IssueResult.class);
         when(mockIssueService.update(mockUser, mockResult)).thenReturn(mockUpdateIssueResult);
+
+        // prepare log appender
+        ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(
+                ch.qos.logback.classic.Logger.ROOT_LOGGER_NAME);
+        mockAppender = mock(Appender.class);
+        when(mockAppender.getName()).thenReturn("MOCK");
+        root.addAppender(mockAppender);
     }
 
     @Test
     public void testOnIssueEventEmptySettings() {
-
         PluginSettings mockPluginSettings = mock(PluginSettings.class);
         when(mockPluginSettings.get("codenvy.admin.instanceurl")).thenReturn("");
         when(mockPluginSettings.get("codenvy.admin.username")).thenReturn("");
@@ -78,6 +92,18 @@ public class IssueCreatedListenerUnitTest {
         Issue mockIssue = mock(Issue.class);
         IssueEvent issueEvent = new IssueEvent(mockIssue, null, null, EventType.ISSUE_CREATED_ID);
         issueCreatedListener.onIssueEvent(issueEvent);
+
+        // check that log message is the expected one
+        verify(mockAppender).doAppend(argThat(new ArgumentMatcher() {
+            @Override
+            public boolean matches(final Object argument) {
+                LoggingEvent event = (LoggingEvent)argument;
+                String levelString = event.getLevel().levelStr;
+                String eventMessage = event.getFormattedMessage();
+                return ("WARN".equals(levelString) && eventMessage.contains(
+                        "At least one of codenvy URL (''), username ('') or password ('') is not set or empty."));
+            }
+        }));
     }
 
     @Test
@@ -101,6 +127,17 @@ public class IssueCreatedListenerUnitTest {
 
         IssueEvent issueEvent = new IssueEvent(mockIssue, null, null, EventType.ISSUE_CREATED_ID);
         issueCreatedListener.onIssueEvent(issueEvent);
+
+        // check that log message is the expected one
+        verify(mockAppender).doAppend(argThat(new ArgumentMatcher() {
+            @Override
+            public boolean matches(final Object argument) {
+                LoggingEvent event = (LoggingEvent)argument;
+                String levelString = event.getLevel().levelStr;
+                String eventMessage = event.getFormattedMessage();
+                return ("WARN".equals(levelString) && eventMessage.contains("No user given in issue event."));
+            }
+        }));
     }
 
     @Test
@@ -127,5 +164,17 @@ public class IssueCreatedListenerUnitTest {
 
         IssueEvent issueEvent = new IssueEvent(mockIssue, null, mockUser, EventType.ISSUE_CREATED_ID);
         issueCreatedListener.onIssueEvent(issueEvent);
+
+        // check that log message is the expected one
+        verify(mockAppender).doAppend(argThat(new ArgumentMatcher() {
+            @Override
+            public boolean matches(final Object argument) {
+                LoggingEvent event = (LoggingEvent)argument;
+                String levelString = event.getLevel().levelStr;
+                String eventMessage = event.getFormattedMessage();
+                return ("WARN".equals(levelString) &&
+                        eventMessage.contains("Field Develop (null) and/or Review (null) are not available for issue null."));
+            }
+        }));
     }
 }
