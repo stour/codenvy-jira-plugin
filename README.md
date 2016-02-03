@@ -1,25 +1,24 @@
 # Codenvy JIRA Plugin
-It consists in three parts:
-* An issue event listener that generates Develop and Review factories for each new (factory enabled) issue.
-* Two custom fields Develop and Review that display links to Codenvy workspaces
-* An administration page to configure the Codenvy instance, username and password the plugin will use.
+* Issue event listener that generates Develop and Review factories for each new (factory enabled) issue.
+* Custom fields Develop and Review that display links to Codenvy workspaces
+* Administration page to configure the Codenvy instance, username and password the plugin will use.
 
-# Prerequisites
+## Prerequisites
 - Java 8
 - JIRA >= 6.4
 
-# Create project 'parent' factories
+## Create project 'parent' factories
 Each JIRA projects that will be factory enabled must have a parent factory configured in Codenvy.
 This factory has to be named same as the key of the JIRA project.
 
-# Install the plugin on your instance
+## Install the plugin on your instance
 1. As an admin go to Jira Administration > Add-ons page.
 2. Click on _Manage add-ons_ on the left menu bar.
 3. Click the _Upload add-on_ link at the top right side of the page.
 4. Enter the location of the JAR.
 5. Click _Upload_.
 
-# Configure
+## Configure
 1. As an admin go to Jira Administration > System page.
    Click on _Logging & Profiling_ on the left menu bar.
    Click on _Configure logging level for another package_.
