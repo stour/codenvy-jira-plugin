@@ -34,6 +34,7 @@ import static us.monoid.web.Resty.content;
 
 /**
  * JIRA listener that generates Codenvy factories for factory activated issues.
+ *
  */
 public class IssueCreatedListener implements InitializingBean, DisposableBean {
 
@@ -50,6 +51,9 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
     /**
      * Constructor.
      * @param eventPublisher injected {@code EventPublisher} implementation.
+     * @param pluginSettingsFactory factory to get globally saved settings.
+     * @param issueService service to work with JIRA issues.
+     * @param fieldManager service to work with JIRA issue fields.
      */
     public IssueCreatedListener(EventPublisher eventPublisher, PluginSettingsFactory pluginSettingsFactory,
                                 IssueService issueService, FieldManager fieldManager) {
@@ -223,6 +227,16 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
         }
     }
 
+    /**
+     * Update a JIRA issue with given value in fields Develop and Review
+     *
+     * @param appUser the user from current session
+     * @param issueKey the key of the issue to update
+     * @param developFieldId the id of custom field Develop
+     * @param developValue the value to put in custom field Develop
+     * @param reviewFieldId the id of custom field Review
+     * @param reviewValue the value to put in custom field Review
+     */
     private void updateIssue(ApplicationUser appUser, String issueKey, String developFieldId, String developValue,
                              String reviewFieldId, String reviewValue) {
         // Get the issue from the key that's passed in
@@ -243,6 +257,13 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
         }
     }
 
+    /**
+     * Set a given createPolicy to a given factory
+     * @param factory the factory to update
+     * @param createPolicy the value of create policy
+     * @return the updated factory
+     * @throws JSONException
+     */
     private JSONObject setCreatePolicy(JSONObject factory, String createPolicy) throws JSONException {
         JSONObject newFactory = factory;
         JSONObject policies = newFactory.optJSONObject("policies");
@@ -255,6 +276,13 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
         return newFactory;
     }
 
+    /**
+     * Get factory link from a factory
+     *
+     * @param factory the factory to search into
+     * @return the 'accept-named' URL of the factory
+     * @throws JSONException
+     */
     private String getNamedFactoryUrl(JSONObject factory) throws JSONException {
         String factoryUrl = null;
         JSONArray links = factory.getJSONArray("links");

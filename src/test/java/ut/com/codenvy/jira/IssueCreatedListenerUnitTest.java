@@ -91,6 +91,7 @@ public class IssueCreatedListenerUnitTest {
 
         Issue mockIssue = mock(Issue.class);
         IssueEvent issueEvent = new IssueEvent(mockIssue, null, null, EventType.ISSUE_CREATED_ID);
+        // call method to test
         issueCreatedListener.onIssueEvent(issueEvent);
 
         // check that log message is the expected one
@@ -126,6 +127,7 @@ public class IssueCreatedListenerUnitTest {
         when(mockIssue.getProjectObject()).thenReturn(mockIssueProject);
 
         IssueEvent issueEvent = new IssueEvent(mockIssue, null, null, EventType.ISSUE_CREATED_ID);
+        // call method to test
         issueCreatedListener.onIssueEvent(issueEvent);
 
         // check that log message is the expected one
@@ -163,6 +165,7 @@ public class IssueCreatedListenerUnitTest {
                 new IssueCreatedListener(mockEventPublisher, mockPluginSettingsFactory, mockIssueService, mockFieldManager);
 
         IssueEvent issueEvent = new IssueEvent(mockIssue, null, mockUser, EventType.ISSUE_CREATED_ID);
+        // call method to test
         issueCreatedListener.onIssueEvent(issueEvent);
 
         // check that log message is the expected one
