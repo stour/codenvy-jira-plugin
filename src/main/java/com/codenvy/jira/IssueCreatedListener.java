@@ -115,7 +115,6 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
                     LOG.warn("No user given in issue event.");
                     return;
                 }
-                final ApplicationUser appUser = ApplicationUsers.from(eventUser);
 
                 // Get id of custom fields Develop & Review
                 String developFieldId = null;
@@ -215,6 +214,7 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
                 String developFieldValue = "<a id=\"codenvy_develop_field\" href=\"" + developFactoryUrl + "\">Develop in Codenvy</a>";
                 String reviewFieldValue = "<a id=\"codenvy_review_field\" href=\"" + reviewFactoryUrl + "\">Review in Codenvy</a>";
 
+                final ApplicationUser appUser = ApplicationUsers.from(eventUser);
                 updateIssue(appUser, issueKey, developFieldId, developFieldValue, reviewFieldId, reviewFieldValue);
 
             } catch (JSONException | IOException | FieldException e) {
