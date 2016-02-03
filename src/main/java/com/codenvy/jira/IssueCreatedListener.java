@@ -95,9 +95,11 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
             final String codenvyUsername = (String)settings.get("codenvy.admin.username");
             final String codenvyPassword = (String)settings.get("codenvy.admin.password");
 
-            if (codenvyUrl == null || codenvyUsername == null || codenvyPassword == null) {
-                LOG.warn("codenvy URL (" + codenvyUrl + "), username (" + codenvyUsername + ") " +
-                         "or password (" + codenvyPassword + ") is not set.");
+            if (codenvyUrl == null || codenvyUrl.isEmpty()
+                || codenvyUsername == null || codenvyUsername.isEmpty()
+                || codenvyPassword == null || codenvyPassword.isEmpty()) {
+                LOG.warn("At least one of codenvy URL (" + codenvyUrl + "), username (" + codenvyUsername + ") " +
+                         "or password (" + codenvyPassword + ") is not set or empty.");
                 return;
             }
 
