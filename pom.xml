@@ -1,41 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
 
+    Copyright (c) 2012-2016 Codenvy
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the Eclipse Public License v1.0
+    which accompanies this distribution, and is available at
+    http://www.eclipse.org/legal/epl-v10.html
+
+    Contributors:
+      Codenvy, S.A. - initial API and implementation
+
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <!-- <parent>
+        <artifactId>codenvy-plugin-parent</artifactId>
+        <groupId>com.codenvy.plugin</groupId>
+        <version>4.0.0-RC3-SNAPSHOT</version>
+    </parent> -->
     <groupId>com.codenvy.jira</groupId>
     <artifactId>codenvy-jira-plugin</artifactId>
     <version>1.0.2</version>
+    <packaging>atlassian-plugin</packaging>
+    <name>codenvy-jira-plugin</name>
+    <description>This plugin activates Codenvy factories in JIRA issues.</description>
     <organization>
         <name>Codenvy</name>
         <url>http://www.codenvy.com</url>
     </organization>
-    <name>codenvy-jira-plugin</name>
-    <description>This plugin activates Codenvy factories in JIRA issues.</description>
-    <packaging>atlassian-plugin</packaging>
+    <properties>
+        <amps.version>6.2.1</amps.version>
+        <jira.version>6.4.6</jira.version>
+        <plugin.testrunner.version>1.1.1</plugin.testrunner.version>
+        <refapp.version>2.12.0</refapp.version>
+        <!-- TestKit version 5.x for JIRA 5.x, 6.x for JIRA 6.x -->
+        <testkit.version>6.4.6</testkit.version>
+    </properties>
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.10.19</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.1.2</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-            <version>1.1.2</version>
-            <scope>test</scope>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.2.2-atlassian-1</version>
         </dependency>
         <dependency>
             <groupId>us.monoid.web</groupId>
@@ -43,9 +48,9 @@
             <version>0.3.2</version>
         </dependency>
         <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>2.1</version>
+            <groupId>com.atlassian.jira</groupId>
+            <artifactId>jira-api</artifactId>
+            <version>${jira.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -61,10 +66,34 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.atlassian.jira</groupId>
-            <artifactId>jira-api</artifactId>
-            <version>${jira.version}</version>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>jsr311-api</artifactId>
+            <version>1.1.1</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>2.5.6.SEC01</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.1.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>1.1.2</version>
+            <scope>test</scope>
         </dependency>
         <!-- Add dependency on jira-core if you want access to JIRA implementation classes as well as the sanctioned API. -->
         <!-- This is not normally recommended, but may be required eg when migrating a plugin originally developed against JIRA 4.x -->
@@ -84,23 +113,30 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>jsr311-api</artifactId>
-            <version>1.1.1</version>
-            <scope>provided</scope>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.2.2-atlassian-1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <version>2.5.6.SEC01</version>
-            <scope>provided</scope>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.10.19</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
+    <repositories>
+        <repository>
+            <id>atlassian-public</id>
+            <url>https://maven.atlassian.com/repository/public</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>atlassian-public</id>
+            <url>https://maven.atlassian.com/repository/public</url>
+        </pluginRepository>
+    </pluginRepositories>
     <build>
         <plugins>
             <plugin>
@@ -112,6 +148,7 @@
                     <productVersion>${jira.version}</productVersion>
                     <productDataVersion>${jira.version}</productDataVersion>
                     <log4jProperties>src/aps/log4j.properties</log4jProperties>
+                    <!-- <skipITs>true</skipITs> -->
                 </configuration>
             </plugin>
             <plugin>
@@ -121,14 +158,20 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
+            <!-- <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin> -->
         </plugins>
     </build>
-    <properties>
-        <jira.version>6.4.6</jira.version>
-        <amps.version>6.2.1</amps.version>
-        <refapp.version>2.12.0</refapp.version>
-        <plugin.testrunner.version>1.1.1</plugin.testrunner.version>
-        <!-- TestKit version 5.x for JIRA 5.x, 6.x for JIRA 6.x -->
-        <testkit.version>6.4.6</testkit.version>
-    </properties>
 </project>
