@@ -48,7 +48,7 @@ public class IssueCreatedListenerUnitTest {
         ApplicationUser mockUser = mock(ApplicationUser.class);
 
         MutableIssue mockIssue = mock(MutableIssue.class);
-        when(mockIssue.getId()).thenReturn(1l);
+        when(mockIssue.getId()).thenReturn(1L);
 
         IssueService.IssueResult mockIssueResult = mock(IssueService.IssueResult.class);
         when(mockIssueResult.getIssue()).thenReturn(mockIssue);
