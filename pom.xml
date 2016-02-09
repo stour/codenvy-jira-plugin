@@ -29,7 +29,7 @@
         <url>http://www.codenvy.com</url>
     </organization>
     <properties>
-        <amps.version>6.2.1</amps.version>
+        <amps.version>6.1.0</amps.version>
         <jira.version>6.4.6</jira.version>
         <plugin.testrunner.version>1.1.1</plugin.testrunner.version>
         <refapp.version>2.12.0</refapp.version>
