@@ -16,7 +16,7 @@
     <!-- <parent>
         <artifactId>codenvy-plugin-parent</artifactId>
         <groupId>com.codenvy.plugin</groupId>
-        <version>4.0.0-RC3-SNAPSHOT</version>
+        <version>4.0.0-RC4-SNAPSHOT</version>
     </parent> -->
     <groupId>com.codenvy.jira</groupId>
     <artifactId>codenvy-jira-plugin</artifactId>
