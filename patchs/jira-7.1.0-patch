@@ -1,0 +1,77 @@
+diff --git a/pom.xml b/pom.xml
+index 53dec6c..b4965cd 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -30,10 +30,10 @@
+     </organization>
+     <properties>
+         <amps.version>6.1.0</amps.version>
+-        <jira.version>6.4.6</jira.version>
++        <jira.version>7.1.0</jira.version>
+         <plugin.testrunner.version>1.1.1</plugin.testrunner.version>
+         <refapp.version>2.12.0</refapp.version>
+-        <testkit.version>6.4.6</testkit.version>
++        <testkit.version>7.1.0</testkit.version>
+     </properties>
+     <dependencies>
+         <dependency>
+diff --git a/src/main/java/com/codenvy/jira/IssueCreatedListener.java b/src/main/java/com/codenvy/jira/IssueCreatedListener.java
+index 6dc251f..a63545c 100644
+--- a/src/main/java/com/codenvy/jira/IssueCreatedListener.java
++++ b/src/main/java/com/codenvy/jira/IssueCreatedListener.java
+@@ -15,7 +15,6 @@ import us.monoid.json.JSONException;
+ import us.monoid.json.JSONObject;
+ import us.monoid.web.Resty;
+ 
+-import com.atlassian.crowd.embedded.api.User;
+ import com.atlassian.event.api.EventListener;
+ import com.atlassian.event.api.EventPublisher;
+ import com.atlassian.jira.issue.fields.CustomField;
+@@ -28,7 +27,6 @@ import com.atlassian.jira.issue.Issue;
+ import com.atlassian.jira.issue.IssueInputParameters;
+ import com.atlassian.jira.issue.MutableIssue;
+ import com.atlassian.jira.user.ApplicationUser;
+-import com.atlassian.jira.user.ApplicationUsers;
+ import com.atlassian.sal.api.pluginsettings.PluginSettings;
+ import com.atlassian.sal.api.pluginsettings.PluginSettingsFactory;
+ 
+@@ -125,7 +123,7 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
+                 final String projectName = issue.getProjectObject().getName();
+ 
+                 // Get current JIRA user
+-                final User eventUser = issueEvent.getUser();
++                final ApplicationUser eventUser = issueEvent.getUser();
+                 if (eventUser == null) {
+                     LOG.warn("No user given in issue event.");
+                     return;
+@@ -230,8 +228,7 @@ public class IssueCreatedListener implements InitializingBean, DisposableBean {
+                 String developFieldValue = "<a id=\"codenvy_develop_field\" href=\"" + developFactoryUrl + "\">Develop in Codenvy</a>";
+                 String reviewFieldValue = "<a id=\"codenvy_review_field\" href=\"" + reviewFactoryUrl + "\">Review in Codenvy</a>";
+ 
+-                final ApplicationUser appUser = ApplicationUsers.from(eventUser);
+-                updateIssue(appUser, issueKey, developFieldId, developFieldValue, reviewFieldId, reviewFieldValue);
++                updateIssue(eventUser, issueKey, developFieldId, developFieldValue, reviewFieldId, reviewFieldValue);
+ 
+             } catch (JSONException | IOException | FieldException e) {
+                 LOG.error(e.getMessage());
+diff --git a/src/test/java/ut/com/codenvy/jira/IssueCreatedListenerUnitTest.java b/src/test/java/ut/com/codenvy/jira/IssueCreatedListenerUnitTest.java
+index ef71ce6..fa2e76f 100644
+--- a/src/test/java/ut/com/codenvy/jira/IssueCreatedListenerUnitTest.java
++++ b/src/test/java/ut/com/codenvy/jira/IssueCreatedListenerUnitTest.java
+@@ -13,7 +13,6 @@ package ut.com.codenvy.jira;
+ import ch.qos.logback.classic.spi.LoggingEvent;
+ import ch.qos.logback.core.Appender;
+ 
+-import com.atlassian.crowd.embedded.api.User;
+ import com.atlassian.event.api.EventPublisher;
+ import com.atlassian.jira.bc.issue.IssueService;
+ import com.atlassian.jira.event.issue.IssueEvent;
+@@ -168,7 +167,7 @@ public class IssueCreatedListenerUnitTest {
+         when(mockIssueProject.getName()).thenReturn("TEST");
+         when(mockIssue.getProjectObject()).thenReturn(mockIssueProject);
+ 
+-        User mockUser = mock(User.class);
++        ApplicationUser mockUser = mock(ApplicationUser.class);
+         when(mockFieldManager.getAvailableCustomFields(mockUser, mockIssue)).thenReturn(Collections.EMPTY_SET);
+ 
+         IssueCreatedListener issueCreatedListener =
